@@ -29,5 +29,5 @@ RUN \
 EXPOSE 53 53/udp
 VOLUME ["/etc/coredns"]
 
-ENTRYPOINT ["/entrypoint.sh"]
+ENTRYPOINT ["/root/entrypoint.sh"]
 CMD ["-conf", "/etc/coredns/Corefile"]
