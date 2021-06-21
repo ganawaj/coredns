@@ -13,6 +13,7 @@ COPY --from=0 /etc/ssl/certs /etc/ssl/certs
 COPY --from=0 /coredns /coredns
 
 COPY ./src/entrypoint.sh /root/entrypoint.sh
+RUN chmod +x /root/entrypoint.sh
 
 RUN \
   mkdir -p /root/.ssh && \
