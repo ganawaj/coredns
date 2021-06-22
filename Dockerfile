@@ -1,34 +1,12 @@
-FROM coredns/coredns
+FROM golang:1.15 AS builder
 
-FROM ubuntu
+RUN git clone v1.8.4 https://github.com/coredns/coredns /coredns
 
-RUN apt-get update -y
-
-RUN apt-get install \
-  curl \
-  openssh-client \
-  git -y
-
-COPY --from=0 /etc/ssl/certs /etc/ssl/certs
-COPY --from=0 /coredns /coredns
-
-COPY ./src/entrypoint.sh /root/entrypoint.sh
-RUN chmod +x /root/entrypoint.sh
+WORKDIR /coredns
 
 RUN \
-  mkdir -p /root/.ssh && \
-  chmod 700 /root/.ssh && \
-  touch /root/.ssh/known_hosts && \
-  chmod 600 /root/.ssh/known_hosts && \
-  ssh-keyscan github.com >> /root/.ssh/known_hosts
+    echo "git:github.com/miekg/coredns-git" >> plugin.cfg && \
+    echo "alternate:github.com/coredns/alternate" >> plugin.cfg && \
+    echo "records:github.com/coredns/records" >> plugin.cfg 
 
-COPY ./src/ssh_config /tmp/.ssh_config
-RUN \
-  chown root:root /tmp/.ssh_config && \
-  chmod 0644 /tmp/.ssh_config
-
-EXPOSE 53 53/udp
-VOLUME ["/etc/coredns"]
-
-ENTRYPOINT ["/root/entrypoint.sh"]
-CMD ["-conf", "/etc/coredns/Corefile"]
+RUN make
