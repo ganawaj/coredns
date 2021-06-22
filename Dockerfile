@@ -1,6 +1,6 @@
 FROM golang:1.15 AS builder
 
-RUN git clone v1.8.4 https://github.com/coredns/coredns /coredns
+RUN git clone https://github.com/coredns/coredns /coredns
 
 WORKDIR /coredns
 
