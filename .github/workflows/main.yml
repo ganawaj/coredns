@@ -7,7 +7,7 @@ on:
 jobs:
 
   gitversion:
-    name: Determine the intended website version
+    name: get current git version
     runs-on: ubuntu-latest
     outputs:
       majorminorpatch: ${{ steps.gitversion.outputs.majorMinorPatch }}
@@ -19,17 +19,58 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Install GitVersion
-        uses: gittools/actions/gitversion/setup@v0.9.7
+      - uses: gittools/actions/gitversion/setup@v0.9.7
         with:
           versionSpec: '5.x'
 
-      - name: Determine Version
+      - uses: gittools/actions/gitversion/execute@v0.9.7
         id: gitversion
-        uses: gittools/actions/gitversion/execute@v0.9.7
 
-  build:
-    name: Build for linux_amd64
+  go-version:
+    name: determine go version
+    runs-on: ubuntu-latest
+    outputs:
+      go-version: ${{ steps.version.outputs.go-version }}
+    steps:
+      - uses: actions/checkout@v2
+      - name: run/output-go-version
+        id: version
+        run: |
+          echo "Building with Go $(cat .go-version)"
+          echo "::set-output name=go-version::$(cat .go-version)"
+
+  build-coredns:
+    name: build coredns binary
+    runs-on: ubuntu-latest
+    env:
+      GOVER: ${{ needs.go-version.outputs.go-version }}
+      GOOS: linux
+      GOARCH: amd64
+    needs:
+      - go-version
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          repository: coredns/coredns
+          ref: v1.8.6
+
+      - uses: actions/setup-go@v2
+        with:
+          go-version: ${{ needs.go-version.outputs.go-version }}
+
+      - name: run/coredns-make
+        run : |
+          make
+
+      - uses: actions/upload-artifact@v3
+        with:
+          name: coredns
+          path: coredns
+          if-no-files-found: error
+          retention-days: 1
+
+  build-image:
+    name: build and upload docker image
     runs-on: ubuntu-latest
     env:
       SEMVER: ${{ needs.gitversion.outputs.semver }}
@@ -38,23 +79,25 @@ jobs:
       BRANCH: ${{ needs.gitversion.outputs.branchname }}
     needs:
       - gitversion
+      - build-coredns
     steps:
-      - uses: actions/checkout@v2
 
-      - name: Login to Dockerhub
-        uses: docker/login-action@v1
+      - uses: docker/login-action@v1
         with:
           username: ${{ secrets.DOCKER_HUB_USERNAME }}
           password: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
 
-      - name: Login to Github Packages
-        uses: docker/login-action@v1
+      - uses: docker/login-action@v1
         with:
           registry: ghcr.io
           username: ganawa
           password: ${{ secrets.GHP_TOKEN }}
 
-      - name: Build and push non-main docker image
+      - uses: actions/download-artifact@v3
+        with:
+          name: coredns
+
+      - name: run/docker-build-push-develop
         if: contains(env.BRANCH, 'develop') || startsWith(env.BRANCH, 'release') || startsWith(env.BRANCH, 'hotfix') || startsWith(env.BRANCH, 'tags')
         run: |
           docker build . \
@@ -63,7 +106,7 @@ jobs:
           docker push ${{ secrets.DOCKER_HUB_USERNAME }}/coredns-builder:${{ env.SEMVER }}
           docker push ghcr.io/${{ github.repository_owner }}/coredns-builder:${{ env.SEMVER }}
 
-      - name: Build and push main/latest docker image
+      - name: run/docker-build-push-main
         if: contains(env.BRANCH, 'main')
         run: |
           docker build . \
@@ -72,7 +115,7 @@ jobs:
           docker push ${{ secrets.DOCKER_HUB_USERNAME }}/coredns-builder:latest
           docker push ghcr.io/${{ github.repository_owner }}/coredns-builder:latest
 
-      - name: Build and push non-tagged docker image
+      - name: run/docker-build-push-sha
         if: "!startsWith(env.BRANCH, 'develop') && !startsWith(env.BRANCH, 'release') && !startsWith(env.BRANCH, 'hotfix') && !startsWith(env.branchName, 'main') && !startsWith(env.BRANCH, 'tags')"
         run: |
           docker build . \
@@ -81,6 +124,12 @@ jobs:
           docker push ${{ secrets.DOCKER_HUB_USERNAME }}/coredns-builder:${{ env.SHORTSHA }}
           docker push ghcr.io/${{ github.repository_owner }}/coredns-builder:${{ env.SHORTSHA }}
 
+  sync-readme:
+    name: sync dockerhub readme
+    runs-on: ubuntu-latest
+    if: "startsWith(env.BRANCH, 'release')"
+    steps:
+      - uses: actions/checkout@v3
       - uses: meeDamian/sync-readme@v1.0.6
         with:
           user: ganawa
