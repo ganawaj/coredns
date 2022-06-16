@@ -1,109 +1,145 @@
-# This is a basic workflow to help you get started with Actions
-
 name: Publish Docker image
 
-# Controls when the action will run. 
 on:
-  # Triggers the workflow on push or pull request events but only for the main branch
-  push:
-    branches: [ main ]
-  pull_request:
-    branches: [ main ]
-
-  # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
+  push:
 
-# A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
-  # This workflow contains a single job called "build"
-  build:
-    # The type of runner that the job will run on
+
+  gitversion:
+    name: get current git version
     runs-on: ubuntu-latest
-
-    # Steps represent a sequence of tasks that will be executed as part of the job
+    outputs:
+      majorminorpatch: ${{ steps.gitversion.outputs.majorMinorPatch }}
+      semver: ${{ steps.gitversion.outputs.semVer }}
+      shortsha: ${{ steps.gitversion.outputs.shortSha }}
+      branchname: ${{ steps.gitversion.outputs.branchName }}
     steps:
-      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v2
-      
-      - name: Set up Docker Buildx
-        id: buildx
-        uses: docker/setup-buildx-action@v1
+        with:
+          fetch-depth: 0
 
-      - name: Cache Docker layers
-        uses: actions/cache@v2
+      - uses: gittools/actions/gitversion/setup@v0.9.7
         with:
-          path: /tmp/.buildx-cache
-          key: ${{ runner.os }}-buildx-${{ github.sha }}
-          restore-keys: |
-            ${{ runner.os }}-buildx-
-      - name: Docker Login
-        # You may pin to the exact commit or the version.
-        # uses: docker/login-action@28218f9b04b4f3f62068d7b6ce6ca5b26e35336c
-        uses: docker/login-action@v1.9.0
+          versionSpec: '5.x'
+
+      - uses: gittools/actions/gitversion/execute@v0.9.7
+        id: gitversion
+
+  go-version:
+    name: determine go version
+    runs-on: ubuntu-latest
+    outputs:
+      go-version: ${{ steps.version.outputs.go-version }}
+    steps:
+      - uses: actions/checkout@v2
+      - name: run/output-go-version
+        id: version
+        run: |
+          echo "Building with Go $(cat .go-version)"
+          echo "::set-output name=go-version::$(cat .go-version)"
+
+  build-coredns:
+    name: build coredns binary
+    runs-on: ubuntu-latest
+    env:
+      GOVER: ${{ needs.go-version.outputs.go-version }}
+      GOOS: linux
+      GOARCH: amd64
+    needs:
+      - go-version
+    steps:
+      - uses: actions/checkout@v3
         with:
-          # Server address of Docker registry. If not set then will default to Docker Hub
-          # registry: # optional
-          # Username used to log against the Docker registry
+          repository: coredns/coredns
+          ref: v1.8.6
+
+      - uses: actions/checkout@v3
+        with:
+          path: build
+
+      - uses: actions/setup-go@v2
+        with:
+          go-version: ${{ needs.go-version.outputs.go-version }}
+
+      - name: run/coredns-make
+        run : |
+          cat build/plugins.txt >> plugin.cfg
+          make
+
+      - uses: actions/upload-artifact@v3
+        with:
+          name: coredns
+          path: coredns
+          if-no-files-found: error
+          retention-days: 1
+
+  build-image:
+    name: build and upload docker image
+    runs-on: ubuntu-latest
+    env:
+      SEMVER: ${{ needs.gitversion.outputs.semver }}
+      SHORTSHA: ${{ needs.gitversion.outputs.shortsha }}
+      MAJORMINORPATCH: ${{ needs.gitversion.outputs.majorminorpatch }}
+      BRANCH: ${{ needs.gitversion.outputs.branchname }}
+    needs:
+      - gitversion
+      - build-coredns
+    steps:
+
+      - uses: docker/login-action@v1
+        with:
           username: ${{ secrets.DOCKER_HUB_USERNAME }}
-          # Password or personal access token used to log against the Docker registry
           password: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
-          # Log out from the Docker registry at the end of a job
-          # logout: # optional, default is true
-      
-      - name: Build and push Docker images
-        # You may pin to the exact commit or the version.
-        # uses: docker/build-push-action@e1b7f96249f2e4c8e4ac1519b9608c0d48944a1f
-        uses: docker/build-push-action@v2.4.0
+
+      - uses: docker/login-action@v1
         with:
-          # List of extra privileged entitlement (eg. network.host,security.insecure)
-          # allow: # optional
-          # List of build-time variables
-          # build-args: # optional
-          # Builder instance
-          builder: ${{ steps.buildx.outputs.name }}
-          # List of external cache sources for buildx (eg. user/app:cache, type=local,src=path/to/dir)
-          cache-from: type=local,src=/tmp/.buildx-cache
-          # List of cache export destinations for buildx (eg. user/app:cache, type=local,dest=path/to/dir)
-          cache-to: type=local,dest=/tmp/.buildx-cache
-          # Build's context is the set of files located in the specified PATH or URL
-          context: ./
-          # Path to the Dockerfile
-          file: ./Dockerfile
-          # List of metadata for an image
-          # labels: # optional
-          # Load is a shorthand for --output=type=docker
-          # load: # optional, default is false
-          # Set the networking mode for the RUN instructions during build
-          # network: # optional
-          # Do not use cache when building the image
-          # no-cache: # optional, default is false
-          # List of output destinations (format: type=local,dest=path)
-          # outputs: # optional
-          # List of target platforms for build
-          # platforms: # optional
-          # Always attempt to pull a newer version of the image
-          # pull: # optional, default is false
-          # Push is a shorthand for --output=type=registry
-          push: true
-          # List of secrets to expose to the build (eg. key=string, GIT_AUTH_TOKEN=mytoken)
-          # secrets: # optional
-          # List of secret files to expose to the build (eg. key=filename, MY_SECRET=./secret.txt)
-          # secret-files: # optional
-          # List of SSH agent socket or keys to expose to the build
-          # ssh: # optional
-          # List of tags
-          tags: ${{ secrets.DOCKER_HUB_USERNAME }}/coredns:latest
-          # Sets the target stage to build
-          # target: # optional
-          # GitHub Token used to authenticate against a repository for Git context
-          # github-token: # optional, default is ${{ github.token }}
-      
+          registry: ghcr.io
+          username: ganawa
+          password: ${{ secrets.GHP_TOKEN }}
+
+      - uses: actions/checkout@v3
+
+      - uses: actions/download-artifact@v3
+        with:
+          name: coredns
+
+      - name: run/docker-build-push-develop
+        if: contains(env.BRANCH, 'develop') || startsWith(env.BRANCH, 'release') || startsWith(env.BRANCH, 'hotfix') || startsWith(env.BRANCH, 'tags')
+        run: |
+          docker build . \
+            -t ${{ secrets.DOCKER_HUB_USERNAME }}/coredns-builder:${{ env.SEMVER }} \
+            -t ghcr.io/${{ github.repository_owner }}/coredns-builder:${{ env.SEMVER }}
+          docker push ${{ secrets.DOCKER_HUB_USERNAME }}/coredns-builder:${{ env.SEMVER }}
+          docker push ghcr.io/${{ github.repository_owner }}/coredns-builder:${{ env.SEMVER }}
+
+      - name: run/docker-build-push-main
+        if: contains(env.BRANCH, 'main')
+        run: |
+          docker build . \
+            -t ${{ secrets.DOCKER_HUB_USERNAME }}/coredns-builder:latest \
+            -t ghcr.io/${{ github.repository_owner }}/coredns-builder:latest
+          docker push ${{ secrets.DOCKER_HUB_USERNAME }}/coredns-builder:latest
+          docker push ghcr.io/${{ github.repository_owner }}/coredns-builder:latest
+
+      - name: run/docker-build-push-sha
+        if: "!startsWith(env.BRANCH, 'develop') && !startsWith(env.BRANCH, 'release') && !startsWith(env.BRANCH, 'hotfix') && !startsWith(env.branchName, 'main') && !startsWith(env.BRANCH, 'tags')"
+        run: |
+          docker build . \
+            -t ${{ secrets.DOCKER_HUB_USERNAME }}/coredns-builder:${{ env.SHORTSHA }} \
+            -t ghcr.io/${{ github.repository_owner }}/coredns-builder:${{ env.SHORTSHA }}
+          docker push ${{ secrets.DOCKER_HUB_USERNAME }}/coredns-builder:${{ env.SHORTSHA }}
+          docker push ghcr.io/${{ github.repository_owner }}/coredns-builder:${{ env.SHORTSHA }}
+
+  sync-readme:
+    name: sync dockerhub readme
+    runs-on: ubuntu-latest
+    if: ${{ startsWith(github.ref_name, 'main') }}
+    steps:
+      - uses: actions/checkout@v3
       - uses: meeDamian/sync-readme@v1.0.6
         with:
           user: ganawa
-          slug: ganawa/coredns
+          slug: ganawa/coredns-builder
           pass: ${{ secrets.DOCKER_HUB_PASS }}
           description: true
-
-      -  name: Image digest
-         run: echo ${{ steps.docker_build.outputs.digest }}  

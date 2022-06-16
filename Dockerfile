@@ -1,12 +1,12 @@
-FROM golang:1.15 AS builder
+FROM debian:stable-slim
 
-RUN git clone https://github.com/coredns/coredns /coredns
+RUN apt-get update && apt-get -uy upgrade
+RUN apt-get -y install ca-certificates && update-ca-certificates
 
-WORKDIR /coredns
+FROM scratch
 
-RUN \
-    echo "git:github.com/miekg/coredns-git" >> plugin.cfg && \
-    echo "alternate:github.com/coredns/alternate" >> plugin.cfg && \
-    echo "records:github.com/coredns/records" >> plugin.cfg 
+COPY --from=0 /etc/ssl/certs /etc/ssl/certs
+ADD coredns /coredns
 
-RUN make
+EXPOSE 53 53/udp
+ENTRYPOINT ["/coredns"]
