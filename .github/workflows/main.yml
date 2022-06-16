@@ -54,13 +54,17 @@ jobs:
           repository: coredns/coredns
           ref: v1.8.6
 
+      - uses: actions/checkout@v3
+        with:
+          path: build
+
       - uses: actions/setup-go@v2
         with:
           go-version: ${{ needs.go-version.outputs.go-version }}
 
       - name: run/coredns-make
         run : |
-          cat plugins.txt >> plugin.cfg
+          cat build/plugins.txt >> plugin.cfg
           make
 
       - uses: actions/upload-artifact@v3
