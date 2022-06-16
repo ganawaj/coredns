@@ -1,18 +1,12 @@
-ARG GO_VERSION=1.17
-ARG COREDNS_VERSION=v1.8.6
+FROM debian:stable-slim
 
-FROM golang:${GO_VERSION}
+RUN apt-get update && apt-get -uy upgrade
+RUN apt-get -y install ca-certificates && update-ca-certificates
 
-# clone coredns repo
-RUN git clone https://github.com/coredns/coredns /coredns
-WORKDIR /coredns
+FROM scratch
 
-RUN \
-    # checkout the desired coredns version
-    git checkout ${COREDNS_VER} && \
-    # add coredns plugins
-    echo "git:github.com/miekg/coredns-git" >> plugin.cfg && \
-    echo "alternate:github.com/coredns/alternate" >> plugin.cfg && \
-    echo "records:github.com/coredns/records" >> plugin.cfg && \
-    # run make to build binary
-    make
+COPY --from=0 /etc/ssl/certs /etc/ssl/certs
+ADD coredns /coredns
+
+EXPOSE 53 53/udp
+ENTRYPOINT ["/coredns"]

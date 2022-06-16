@@ -1,0 +1,3 @@
+git:github.com/miekg/coredns-git
+alternate:github.com/coredns/alternate
+records:github.com/coredns/records
