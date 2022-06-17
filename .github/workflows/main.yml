@@ -108,28 +108,28 @@ jobs:
         if: contains(env.BRANCH, 'develop') || startsWith(env.BRANCH, 'release') || startsWith(env.BRANCH, 'hotfix') || startsWith(env.BRANCH, 'tags')
         run: |
           docker build . \
-            -t ${{ secrets.DOCKER_HUB_USERNAME }}/coredns-builder:${{ env.SEMVER }} \
-            -t ghcr.io/${{ github.repository_owner }}/coredns-builder:${{ env.SEMVER }}
-          docker push ${{ secrets.DOCKER_HUB_USERNAME }}/coredns-builder:${{ env.SEMVER }}
-          docker push ghcr.io/${{ github.repository_owner }}/coredns-builder:${{ env.SEMVER }}
+            -t ${{ secrets.DOCKER_HUB_USERNAME }}/coredns:${{ env.SEMVER }} \
+            -t ghcr.io/${{ github.repository_owner }}/coredns:${{ env.SEMVER }}
+          docker push ${{ secrets.DOCKER_HUB_USERNAME }}/coredns:${{ env.SEMVER }}
+          docker push ghcr.io/${{ github.repository_owner }}/coredns:${{ env.SEMVER }}
 
       - name: run/docker-build-push-main
         if: contains(env.BRANCH, 'main')
         run: |
           docker build . \
-            -t ${{ secrets.DOCKER_HUB_USERNAME }}/coredns-builder:latest \
-            -t ghcr.io/${{ github.repository_owner }}/coredns-builder:latest
-          docker push ${{ secrets.DOCKER_HUB_USERNAME }}/coredns-builder:latest
-          docker push ghcr.io/${{ github.repository_owner }}/coredns-builder:latest
+            -t ${{ secrets.DOCKER_HUB_USERNAME }}/coredns:latest \
+            -t ghcr.io/${{ github.repository_owner }}/coredns:latest
+          docker push ${{ secrets.DOCKER_HUB_USERNAME }}/coredns:latest
+          docker push ghcr.io/${{ github.repository_owner }}/coredns:latest
 
       - name: run/docker-build-push-sha
         if: "!startsWith(env.BRANCH, 'develop') && !startsWith(env.BRANCH, 'release') && !startsWith(env.BRANCH, 'hotfix') && !startsWith(env.branchName, 'main') && !startsWith(env.BRANCH, 'tags')"
         run: |
           docker build . \
-            -t ${{ secrets.DOCKER_HUB_USERNAME }}/coredns-builder:${{ env.SHORTSHA }} \
-            -t ghcr.io/${{ github.repository_owner }}/coredns-builder:${{ env.SHORTSHA }}
-          docker push ${{ secrets.DOCKER_HUB_USERNAME }}/coredns-builder:${{ env.SHORTSHA }}
-          docker push ghcr.io/${{ github.repository_owner }}/coredns-builder:${{ env.SHORTSHA }}
+            -t ${{ secrets.DOCKER_HUB_USERNAME }}/coredns:${{ env.SHORTSHA }} \
+            -t ghcr.io/${{ github.repository_owner }}/coredns:${{ env.SHORTSHA }}
+          docker push ${{ secrets.DOCKER_HUB_USERNAME }}/coredns:${{ env.SHORTSHA }}
+          docker push ghcr.io/${{ github.repository_owner }}/coredns:${{ env.SHORTSHA }}
 
   sync-readme:
     name: sync dockerhub readme
@@ -140,6 +140,6 @@ jobs:
       - uses: meeDamian/sync-readme@v1.0.6
         with:
           user: ganawa
-          slug: ganawa/coredns-builder
+          slug: ganawa/coredns
           pass: ${{ secrets.DOCKER_HUB_PASS }}
           description: true
