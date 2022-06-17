@@ -64,7 +64,7 @@ jobs:
 
       - name: run/coredns-make
         run : |
-          cat build/plugins.txt >> plugin.cfg
+          cat build/.coredns-plugins >> plugin.cfg
           make
 
       - uses: actions/upload-artifact@v3
