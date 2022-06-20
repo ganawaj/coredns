@@ -66,6 +66,7 @@ jobs:
         run : |
           cat build/plugin.cfg >> plugin.cfg
           make
+          chmod +x coredns
 
       - uses: actions/upload-artifact@v3
         with:
