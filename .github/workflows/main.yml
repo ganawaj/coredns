@@ -119,7 +119,7 @@ jobs:
         run: |
           docker build . \
             -t ${{ secrets.DOCKER_HUB_USERNAME }}/coredns:${{ env.SEMVER }} \
-            -t ghcr.io/${{ github.repository_owner }}/coredns:${{ env.SEMVER }}
+            -t ghcr.io/${{ github.repository_owner }}/coredns:${{ env.SEMVER }} \
             -t us-docker.pkg.dev/${{ secrets.GOOGLE_PROJECT }}/coredns:${{ env.SEMVER }}
           docker push ${{ secrets.DOCKER_HUB_USERNAME }}/coredns:${{ env.SEMVER }}
           docker push ghcr.io/${{ github.repository_owner }}/coredns:${{ env.SEMVER }}
@@ -130,7 +130,7 @@ jobs:
         run: |
           docker build . \
             -t ${{ secrets.DOCKER_HUB_USERNAME }}/coredns:latest \
-            -t ghcr.io/${{ github.repository_owner }}/coredns:latest
+            -t ghcr.io/${{ github.repository_owner }}/coredns:latest \
             -t us-docker.pkg.dev/${{ secrets.GOOGLE_PROJECT }}/coredns:latest
           docker push ${{ secrets.DOCKER_HUB_USERNAME }}/coredns:latest
           docker push ghcr.io/${{ github.repository_owner }}/coredns:latest
@@ -141,7 +141,7 @@ jobs:
         run: |
           docker build . \
             -t ${{ secrets.DOCKER_HUB_USERNAME }}/coredns:${{ env.SHORTSHA }} \
-            -t ghcr.io/${{ github.repository_owner }}/coredns:${{ env.SHORTSHA }}
+            -t ghcr.io/${{ github.repository_owner }}/coredns:${{ env.SHORTSHA }} \
             -t us-docker.pkg.dev/${{ secrets.GOOGLE_PROJECT }}/coredns:${{ env.SHORTSHA }}
           docker push ${{ secrets.DOCKER_HUB_USERNAME }}/coredns:${{ env.SHORTSHA }}
           docker push ghcr.io/${{ github.repository_owner }}/coredns:${{ env.SHORTSHA }}
