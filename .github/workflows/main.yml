@@ -88,6 +88,8 @@ jobs:
       - build-coredns
     steps:
 
+      - uses: actions/checkout@v3
+
       - uses: docker/login-action@v1
         with:
           username: ${{ secrets.DOCKER_HUB_USERNAME }}
@@ -102,15 +104,10 @@ jobs:
       - uses: 'google-github-actions/auth@v0'
         with:
           credentials_json: '${{ secrets.GOOGLE_CREDENTIALS }}'
-          create_credentials_file: false
-
-      - uses: 'google-github-actions/setup-gcloud@v0'
 
       - name: run/configure-gcp-docker
         run: |
           gcloud auth configure-docker -q
-
-      - uses: actions/checkout@v3
 
       - uses: actions/download-artifact@v3
         with:
