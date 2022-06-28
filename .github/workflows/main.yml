@@ -102,11 +102,14 @@ jobs:
       - uses: 'google-github-actions/auth@v0'
         with:
           credentials_json: '${{ secrets.GOOGLE_CREDENTIALS }}'
+          create_credentials_file: false
 
       - uses: 'google-github-actions/setup-gcloud@v0'
 
       - name: run/configure-gcp-docker
-        run: gcloud auth configure-docker -q
+        run: |
+          gcloud auth activate-service-account
+          gcloud auth configure-docker -q
 
       - uses: actions/checkout@v3
 
