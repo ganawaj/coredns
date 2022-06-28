@@ -108,7 +108,6 @@ jobs:
 
       - name: run/configure-gcp-docker
         run: |
-          gcloud auth activate-service-account
           gcloud auth configure-docker -q
 
       - uses: actions/checkout@v3
