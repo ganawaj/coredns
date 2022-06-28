@@ -107,7 +107,7 @@ jobs:
 
       - name: run/configure-gcp-docker
         run: |
-          gcloud auth configure-docker -q
+          gcloud auth configure-docker us-docker.pkg.dev -q
 
       - uses: actions/download-artifact@v3
         with:
@@ -122,7 +122,7 @@ jobs:
             -t us-docker.pkg.dev/${{ secrets.GOOGLE_PROJECT }}/coredns:${{ env.SEMVER }}
           docker push ${{ secrets.DOCKER_HUB_USERNAME }}/coredns:${{ env.SEMVER }}
           docker push ghcr.io/${{ github.repository_owner }}/coredns:${{ env.SEMVER }}
-          docker push us-docker.pkg.dev/${{ secrets.GOOGLE_PROJECT }}/coredns:${{ env.SEMVER }}
+          docker push us-docker.pkg.dev/${{ secrets.GOOGLE_PROJECT }}/coredns/coredns:${{ env.SEMVER }}
 
       - name: run/docker-build-push-main
         if: contains(env.BRANCH, 'main')
@@ -133,7 +133,7 @@ jobs:
             -t us-docker.pkg.dev/${{ secrets.GOOGLE_PROJECT }}/coredns:latest
           docker push ${{ secrets.DOCKER_HUB_USERNAME }}/coredns:latest
           docker push ghcr.io/${{ github.repository_owner }}/coredns:latest
-          docker push us-docker.pkg.dev/${{ secrets.GOOGLE_PROJECT }}/coredns:latest
+          docker push us-docker.pkg.dev/${{ secrets.GOOGLE_PROJECT }}/coredns/coredns:latest
 
       - name: run/docker-build-push-sha
         if: "!startsWith(env.BRANCH, 'develop') && !startsWith(env.BRANCH, 'release') && !startsWith(env.BRANCH, 'hotfix') && !startsWith(env.branchName, 'main') && !startsWith(env.BRANCH, 'tags')"
@@ -144,7 +144,7 @@ jobs:
             -t us-docker.pkg.dev/${{ secrets.GOOGLE_PROJECT }}/coredns:${{ env.SHORTSHA }}
           docker push ${{ secrets.DOCKER_HUB_USERNAME }}/coredns:${{ env.SHORTSHA }}
           docker push ghcr.io/${{ github.repository_owner }}/coredns:${{ env.SHORTSHA }}
-          docker push us-docker.pkg.dev/${{ secrets.GOOGLE_PROJECT }}/coredns:${{ env.SHORTSHA }}
+          docker push us-docker.pkg.dev/${{ secrets.GOOGLE_PROJECT }}/coredns/coredns:${{ env.SHORTSHA }}
 
   sync-readme:
     name: sync dockerhub readme
