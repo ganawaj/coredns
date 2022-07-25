@@ -119,10 +119,10 @@ jobs:
           docker build . \
             -t ${{ secrets.DOCKER_HUB_USERNAME }}/coredns:${{ env.SEMVER }} \
             -t ghcr.io/${{ github.repository_owner }}/coredns:${{ env.SEMVER }} \
-            -t us-docker.pkg.dev/${{ secrets.GOOGLE_PROJECT }}/oci-repository/coredns:${{ env.SEMVER }}
+            -t us-docker.pkg.dev/${{ secrets.GOOGLE_PROJECT }}/oci/coredns:${{ env.SEMVER }}
           docker push ${{ secrets.DOCKER_HUB_USERNAME }}/coredns:${{ env.SEMVER }}
           docker push ghcr.io/${{ github.repository_owner }}/coredns:${{ env.SEMVER }}
-          docker push us-docker.pkg.dev/${{ secrets.GOOGLE_PROJECT }}/oci-repository/coredns:${{ env.SEMVER }}
+          docker push us-docker.pkg.dev/${{ secrets.GOOGLE_PROJECT }}/oci/coredns:${{ env.SEMVER }}
 
       - name: run/docker-build-push-main
         if: contains(env.BRANCH, 'main')
@@ -130,10 +130,10 @@ jobs:
           docker build . \
             -t ${{ secrets.DOCKER_HUB_USERNAME }}/coredns:latest \
             -t ghcr.io/${{ github.repository_owner }}/coredns:latest \
-            -t us-docker.pkg.dev/${{ secrets.GOOGLE_PROJECT }}/oci-repository/coredns:latest
+            -t us-docker.pkg.dev/${{ secrets.GOOGLE_PROJECT }}/oci/coredns:latest
           docker push ${{ secrets.DOCKER_HUB_USERNAME }}/coredns:latest
           docker push ghcr.io/${{ github.repository_owner }}/coredns:latest
-          docker push us-docker.pkg.dev/${{ secrets.GOOGLE_PROJECT }}/oci-repository/coredns:latest
+          docker push us-docker.pkg.dev/${{ secrets.GOOGLE_PROJECT }}/oci/coredns:latest
 
       - name: run/docker-build-push-sha
         if: "!startsWith(env.BRANCH, 'develop') && !startsWith(env.BRANCH, 'release') && !startsWith(env.BRANCH, 'hotfix') && !startsWith(env.branchName, 'main') && !startsWith(env.BRANCH, 'tags')"
@@ -141,10 +141,10 @@ jobs:
           docker build . \
             -t ${{ secrets.DOCKER_HUB_USERNAME }}/coredns:${{ env.SHORTSHA }} \
             -t ghcr.io/${{ github.repository_owner }}/coredns:${{ env.SHORTSHA }} \
-            -t us-docker.pkg.dev/${{ secrets.GOOGLE_PROJECT }}/oci-repository/coredns:${{ env.SHORTSHA }}
+            -t us-docker.pkg.dev/${{ secrets.GOOGLE_PROJECT }}/oci/coredns:${{ env.SHORTSHA }}
           docker push ${{ secrets.DOCKER_HUB_USERNAME }}/coredns:${{ env.SHORTSHA }}
           docker push ghcr.io/${{ github.repository_owner }}/coredns:${{ env.SHORTSHA }}
-          docker push us-docker.pkg.dev/${{ secrets.GOOGLE_PROJECT }}/oci-repository/coredns:${{ env.SHORTSHA }}
+          docker push us-docker.pkg.dev/${{ secrets.GOOGLE_PROJECT }}/oci/coredns:${{ env.SHORTSHA }}
 
   sync-readme:
     name: sync dockerhub readme
