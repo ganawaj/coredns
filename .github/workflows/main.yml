@@ -64,9 +64,8 @@ jobs:
 
       - name: run/coredns-make
         run : |
-          sudo apt install libunbound-dev -y
           cat build/plugin.cfg >> plugin.cfg
-          CGO_ENABLED=1 make
+          make
           chmod +x coredns
 
       - uses: actions/upload-artifact@v3
