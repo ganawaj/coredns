@@ -34,6 +34,9 @@ jobs:
         with:
           go-version-file: 'coredns/go.mod'
 
+      - run: make coredns
+        working-directory: coredns
+
       - uses: docker/login-action@v2
         with:
           username: ${{ secrets.DOCKER_HUB_USERNAME }}
