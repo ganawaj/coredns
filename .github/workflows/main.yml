@@ -17,10 +17,10 @@ jobs:
 
       - uses: actions/checkout@v3
         with:
-          path: /tmp/build
+          path: ./tmp/build
 
       - run: echo "COREDNS_VERSION=$(yq '.coredns' version.yml)" >> $GITHUB_ENV
-        working-directory: /tmp/build
+        working-directory: ./tmp/build
 
       - uses: actions/checkout@v3
         with:
@@ -28,8 +28,8 @@ jobs:
           ref: ${{ env.COREDNS_VERSION }}
 
       - run: |
-          cp /tmp/build/plugin.cfg .
-          rm -rf /tmp/build
+          cp ./tmp/build/plugin.cfg .
+          rm -rf ./tmp/build
 
       - uses: actions/setup-go@v4
         with:
