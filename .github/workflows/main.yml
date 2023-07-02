@@ -35,7 +35,6 @@ jobs:
       - run: |
           rm ./build/plugin.cfg
           mv plugin.cfg ./build/plugin.cfg
-          cat ./build/plugin.cfg
 
       - run : |
           make coredns
@@ -43,10 +42,7 @@ jobs:
           cp coredns ../
         working-directory: ./build
 
-      - run: |
-          ls
-          rm -rf build
-
+      - run: rm -rf build
 
       - uses: docker/login-action@v2
         with:
