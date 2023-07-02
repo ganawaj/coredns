@@ -1,7 +1,0 @@
-git:github.com/miekg/coredns-git
-alternate:github.com/coredns/alternate
-records:github.com/coredns/records
-k8s_gateway:github.com/ori-edge/k8s_gateway
-mdns:github.com/openshift/coredns-mdns
-netbox:github.com/oz123/coredns-netbox-plugin
-redisc:github.com/miekg/redis
