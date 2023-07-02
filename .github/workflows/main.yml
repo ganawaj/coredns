@@ -38,7 +38,7 @@ jobs:
       - run: cat plugin.cfg >> build/plugin.cfg
 
       - run : |
-          make
+          make coredns
           chmod +x coredns
           cp coredns ../
         working-directory: ./build
