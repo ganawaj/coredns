@@ -40,7 +40,9 @@ jobs:
           cp coredns ../
         working-directory: ./build
 
-      - run: rm -rf build
+      - run: |
+          ls
+          rm -rf build
 
 
       - uses: docker/login-action@v2
