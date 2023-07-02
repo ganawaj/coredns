@@ -26,7 +26,7 @@ jobs:
           ref: ${{ env.COREDNS_VERSION }}
 
       - run: echo "GO_VERSION=$(go mod edit -json | jq -r .Go)" >> $GITHUB_ENV
-        working-directory: ./build/coredns
+        working-directory: build/coredns
 
       - uses: actions/checkout@v3
 
@@ -40,7 +40,7 @@ jobs:
           make coredns
           chmod +x coredns
           cp coredns ../
-        working-directory: ./build/coredns
+        working-directory: build/coredns
 
       - run: rm -rf build
 
