@@ -17,7 +17,7 @@ jobs:
 
       - uses: actions/checkout@v3
 
-      - run: echo "COREDNS_VERSION=$(yq '.coredns' version.yaml)" >> $GITHUB_ENV
+      - run: echo "COREDNS_VERSION=$(yq '.coredns' version.yml)" >> $GITHUB_ENV
 
       - uses: actions/checkout@v3
         with:
@@ -29,7 +29,7 @@ jobs:
 
       - uses: actions/checkout@v3
         with:
-          path: build
+          path: coredns
 
       - uses: actions/setup-go@v2
         with:
@@ -41,7 +41,7 @@ jobs:
           make coredns
           chmod +x coredns
           cp coredns ../
-        working-directory: ./build
+        working-directory: ./coredns
 
       - run: rm -rf build
 
