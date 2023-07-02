@@ -35,6 +35,7 @@ jobs:
       - run: |
           rm ./build/plugin.cfg
           mv plugin.cfg ./build/plugin.cfg
+          cat ./build/plugin.cfg
 
       - run : |
           make coredns
