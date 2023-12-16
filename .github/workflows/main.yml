@@ -4,6 +4,7 @@ on:
   push:
     paths:
       - 'configs/**'
+      - 'build/**'
 
 jobs:
 
