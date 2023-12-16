@@ -16,13 +16,13 @@ jobs:
 
     steps:
 
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           path: config
 
       - run: echo "COREDNS_VERSION=$(yq '.coredns' config/configs/version.yml)" >> $GITHUB_ENV
 
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           repository: coredns/coredns
           ref: ${{ env.COREDNS_VERSION }}
