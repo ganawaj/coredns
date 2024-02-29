@@ -1,6 +1,6 @@
-FROM golang:${GO_VERSION} AS BINARY
+FROM golang:1.20 AS BINARY
 
-RUN git clone --depth 1 --branch ${COREDNS_VERSION} https://github.com/coredns/coredns.git /coredns
+RUN git clone --depth 1 --branch v1.11.2 https://github.com/coredns/coredns.git /coredns
 
 WORKDIR /coredns
 COPY plugin.cfg /coredns/plugin.cfg
@@ -11,13 +11,23 @@ RUN \
 
 FROM debian:stable-slim AS SSL
 
-RUN apt-get update && apt-get -uy upgrade
-RUN apt-get -y install ca-certificates && update-ca-certificates
+SHELL [ "/bin/sh", "-ec" ]
 
-FROM scratch
+RUN export DEBCONF_NONINTERACTIVE_SEEN=true \
+           DEBIAN_FRONTEND=noninteractive \
+           DEBIAN_PRIORITY=critical \
+           TERM=linux ; \
+    apt-get -qq update ; \
+    apt-get -yyqq upgrade ; \
+    apt-get -yyqq install ca-certificates libcap2-bin; \
+    apt-get clean
 
-COPY --from=SSL /etc/ssl/certs /etc/ssl/certs
-COPY --from=BINARY /coredns/coredns /coredns
+FROM gcr.io/distroless/static-debian11:nonroot
+
+COPY --from=SSL /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
+COPY --from=BINARY /coredns /coredns
+
+USER nonroot:nonroot
 
 EXPOSE 53 53/udp
 ENTRYPOINT ["/coredns"]

@@ -1,0 +1,5 @@
+FROM golang:1.20 AS BINARY
+
+RUN git clone --depth 1 --branch v1.11.2 https://github.com/coredns/coredns.git /coredns
+
+WORKDIR /coredns

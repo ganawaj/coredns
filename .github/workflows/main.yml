@@ -2,9 +2,6 @@ name: Publish Docker image
 
 on:
   push:
-    paths:
-      - 'configs/**'
-      - 'build/**'
 
 jobs:
 
@@ -16,38 +13,33 @@ jobs:
       GOARCH: amd64
 
     steps:
-
-      - uses: actions/checkout@v3
-        with:
-          path: config
-
-      - run: echo "COREDNS_VERSION=$(yq '.coredns' config/configs/version.yml)" >> $GITHUB_ENV
-
+      - run: |
+          echo "COREDNS_VERSION=$(curl -s https://api.github.com/repos/coredns/coredns/releases/latest | jq '.tag_name' | sed 's/\"//g')" >> "$GITHUB_ENV"
       - uses: actions/checkout@v3
         with:
           repository: coredns/coredns
           ref: ${{ env.COREDNS_VERSION }}
           path: coredns
-
-      - run: |
-          cp config/configs/plugin.cfg coredns/
-
       - uses: actions/setup-go@v4
         with:
           go-version-file: 'coredns/go.mod'
-
-      - run: make coredns
+      - uses: actions/checkout@v3
+        with:
+          path: config
+      - run: |
+          cp config/plugin.cfg coredns/
+      - run: make
         working-directory: coredns
 
-      - uses: docker/login-action@v2
-        with:
-          username: ${{ secrets.DOCKER_HUB_USERNAME }}
-          password: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
+      # - uses: docker/login-action@v2
+      #   with:
+      #     username: ${{ secrets.DOCKER_HUB_USERNAME }}
+      #     password: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
 
-      - uses: docker/build-push-action@v4
-        with:
-          context: coredns/.
-          push: true
-          tags: |
-            ${{ secrets.DOCKER_HUB_USERNAME }}/coredns:latest
-            ${{ secrets.DOCKER_HUB_USERNAME }}/coredns:${{ env.COREDNS_VERSION }}
+      # - uses: docker/build-push-action@v4
+      #   with:
+      #     context: coredns/.
+      #     push: true
+      #     tags: |
+      #       ${{ secrets.DOCKER_HUB_USERNAME }}/coredns:latest
+      #       ${{ secrets.DOCKER_HUB_USERNAME }}/coredns:${{ env.COREDNS_VERSION }}
