@@ -17,7 +17,7 @@ RUN setcap cap_net_bind_service=+ep /coredns
 FROM gcr.io/distroless/static-debian11:nonroot
 
 COPY --from=build /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
-COPY --from=BINbuildARY /coredns /coredns
+COPY --from=build /coredns /coredns
 
 USER nonroot:nonroot
 
