@@ -1,15 +1,4 @@
-FROM golang:1.20 AS BINARY
-
-RUN git clone --depth 1 --branch v1.11.2 https://github.com/coredns/coredns.git /coredns
-
-WORKDIR /coredns
-COPY plugin.cfg /coredns/plugin.cfg
-
-RUN \
-    make coredns && \
-    chmod +x coredns
-
-FROM debian:stable-slim AS SSL
+FROM debian:stable-slim AS build
 
 SHELL [ "/bin/sh", "-ec" ]
 
@@ -22,10 +11,13 @@ RUN export DEBCONF_NONINTERACTIVE_SEEN=true \
     apt-get -yyqq install ca-certificates libcap2-bin; \
     apt-get clean
 
+COPY coredns /coredns
+RUN setcap cap_net_bind_service=+ep /coredns
+
 FROM gcr.io/distroless/static-debian11:nonroot
 
-COPY --from=SSL /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
-COPY --from=BINARY /coredns /coredns
+COPY --from=build /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
+COPY --from=BINbuildARY /coredns /coredns
 
 USER nonroot:nonroot
 

@@ -5,13 +5,13 @@ on:
 
 jobs:
 
+  # build coredns binary with a single arch
   build:
     name: build coredns binary
     runs-on: ubuntu-latest
     env:
       GOOS: linux
       GOARCH: amd64
-
     steps:
       - run: |
           echo "COREDNS_VERSION=$(curl -s https://api.github.com/repos/coredns/coredns/releases/latest | jq '.tag_name' | sed 's/\"//g')" >> "$GITHUB_ENV"
@@ -28,13 +28,25 @@ jobs:
           path: config
       - run: |
           cp config/plugin.cfg coredns/
-
       - run: sudo apt install libunbound-dev -y
-
       - run: make
         working-directory: coredns
         env:
           CGO_ENABLED: 1
+      - uses: actions/upload-artifact@v4
+        with:
+          name: artifacts
+          path: |
+            coredns/coredns
+          if-no-files-found: error
+  # build and deploy docker image
+  docker:
+    name: build docker image
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+      - run: ls
 
       # - uses: docker/login-action@v2
       #   with:
