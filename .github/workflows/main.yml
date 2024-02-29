@@ -28,8 +28,13 @@ jobs:
           path: config
       - run: |
           cp config/plugin.cfg coredns/
+
+      - run: apt install libunbound-dev -y
+
       - run: make
         working-directory: coredns
+        env:
+          CGO_ENABLED: 1
 
       # - uses: docker/login-action@v2
       #   with:

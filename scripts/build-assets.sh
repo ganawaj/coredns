@@ -14,4 +14,4 @@ mkdir -p output
 docker run --rm \
   -v "$(pwd)/output:/output" \
   -v "$(pwd)/plugin.cfg:/coredns/plugin.cfg" \
-  "$BUILD_SHA" BINARY=$BINARY make
+  "$BUILD_SHA" make
