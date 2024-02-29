@@ -11,7 +11,7 @@ RUN export DEBCONF_NONINTERACTIVE_SEEN=true \
     apt-get -yyqq install ca-certificates libcap2-bin; \
     apt-get clean
 
-COPY coredns /coredns
+COPY artifacts/coredns  /coredns
 RUN setcap cap_net_bind_service=+ep /coredns
 
 FROM gcr.io/distroless/static-debian11:nonroot
