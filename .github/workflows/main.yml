@@ -31,7 +31,14 @@ jobs:
           path: config
       - run: |
           cp config/plugin.cfg coredns/
-      - run: sudo apt install libunbound-dev -y
+      - run: |
+          sudo apt-get -qq update && \
+          sudo apt-get -yyqq install libunbound-dev -y \
+        env:
+          DEBCONF_NONINTERACTIVE_SEEN: true
+          DEBIAN_FRONTEND: noninteractive
+          DEBIAN_PRIORITY: critical
+          TERM: linux
       - run: make
         working-directory: coredns
         env:
