@@ -12,12 +12,14 @@ RUN export DEBCONF_NONINTERACTIVE_SEEN=true \
     apt-get clean
 
 COPY artifacts/coredns  /coredns
-RUN setcap cap_net_bind_service=+ep /coredns
+RUN \
+    setcap cap_net_bind_service=+ep /coredns && \
+    chmod +x /coredns
 
 FROM gcr.io/distroless/static-debian11:nonroot
 
 COPY --from=build /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
-COPY --from=build /coredns /coredns
+COPY --from=build --chown=nonroot:nonroot /coredns /coredns
 
 USER nonroot:nonroot
 
