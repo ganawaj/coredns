@@ -47,6 +47,7 @@ jobs:
         working-directory: coredns
         env:
           CGO_ENABLED: 1
+      - run: chmod +x coredns/coredns
       - uses: actions/upload-artifact@v4
         with:
           name: artifacts
