@@ -8,6 +8,9 @@ on:
     branches:
       - main
 
+env:
+  COREDNS_VERSION: 1.11.3
+
 jobs:
   # build coredns binary with a single arch
   build:
@@ -16,16 +19,11 @@ jobs:
     env:
       GOOS: linux
       GOARCH: amd64
-    outputs:
-      COREDNS_VERSION: ${{ steps.version.outputs.COREDNS_VERSION }}
     steps:
-      - id: version
-        run: |
-          echo "COREDNS_VERSION=$(curl -s https://api.github.com/repos/coredns/coredns/releases/latest | jq '.tag_name' | sed 's/\"//g')" >> "$GITHUB_OUTPUT"
       - uses: actions/checkout@v3
         with:
           repository: coredns/coredns
-          ref: ${{ steps.version.outputs.COREDNS_VERSION }}
+          ref: v${{ env.COREDNS_VERSION }}
           path: coredns
       - uses: actions/setup-go@v4
         with:
@@ -69,7 +67,7 @@ jobs:
             ${{ secrets.DOCKER_HUB_USERNAME }}/coredns
           tags: |
             type=raw,value=latest,enable={{is_default_branch}}
-            type=semver,pattern={{version}},value=${{ needs.build.outputs.COREDNS_VERSION }}
+            type=semver,pattern={{version}},value=${{ env.COREDNS_VERSION}}
       - uses: docker/setup-qemu-action@v3
       - uses: docker/setup-buildx-action@v3
       - uses: docker/build-push-action@v4
