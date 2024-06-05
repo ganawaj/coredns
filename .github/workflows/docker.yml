@@ -35,7 +35,8 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_PASSWORD }}
       - name: Publish Docker Images
-        run: make VERSION=${RELEASE:1} \
+        run: |
+          make VERSION=${RELEASE:1} \
           DOCKER=ganawaj \
           GITHUB=https://github.com/ganawaj/coredns/releases/download \
           -f Makefile.docker docker-push
