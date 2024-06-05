@@ -31,7 +31,9 @@ jobs:
           echo "version=${VERSION}" >> $GITHUB_OUTPUT
         id: info
       - name: Build release binary
-        run: make -f Makefile.release release
+        run: |
+          make GITHUB=ganawaj \
+          -f Makefile.release release
       - name: Build release binary sha256
         run: (cd release; for asset in `ls -A *tgz`; do sha256sum $asset > $asset.sha256; done)
       - name: Remove hidden section
